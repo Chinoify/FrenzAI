@@ -1,0 +1,16 @@
+fastapi>=0.115.6
+uvicorn[standard]>=0.34.0
+sqlalchemy[asyncio]>=2.0.36
+aiosqlite>=0.20.0
+pydantic>=2.10.3
+pydantic-settings>=2.7.0
+numpy>=1.26.4
+scipy>=1.14.1
+pydub>=0.25.1
+noisereduce>=3.0.3
+aiofiles>=24.1.0
+huggingface_hub>=0.27.1
+python-multipart>=0.0.19
+websockets>=14.1
+soundfile>=0.12.1
+pyttsx3>=2.99

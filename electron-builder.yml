@@ -1,0 +1,20 @@
+appId: com.frenzai.app
+productName: FrenzAI
+directories:
+  output: dist
+files:
+  - electron/**/*
+  - frontend/dist/**/*
+extraResources:
+  - from: backend/
+    to: backend/
+    filter:
+      - "**/*"
+      - "!models/**"
+      - "!__pycache__/**"
+win:
+  target: nsis
+  icon: resources/icons/icon.png
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
