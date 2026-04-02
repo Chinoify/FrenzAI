@@ -24,7 +24,7 @@ if IS_CLOUD:
     from app.engines.bark_engine import BarkEngine
     from app.engines.f5tts_engine import F5TTSEngine
     from app.engines.qwen3tts_engine import Qwen3TTSEngine
-    from app.engines.qwen3_engine import Qwen3Engine
+    from app.engines.qwen3_engine import Qwen3TTSEngine as Qwen3BaseEngine
     from app.engines.cosyvoice_engine import CosyVoiceEngine
     from app.engines.fishspeech_engine import FishSpeechEngine
     from app.engines.fish_engine import FishSpeechEngine as FishSpeech15Engine
@@ -69,7 +69,7 @@ async def lifespan(app: FastAPI):
         engine_registry.register(BarkEngine(settings.models_dir, device=device))
         engine_registry.register(F5TTSEngine(settings.models_dir, device=device))
         engine_registry.register(Qwen3TTSEngine(settings.models_dir, device=device))
-        engine_registry.register(Qwen3Engine(settings.models_dir, device=device))
+        engine_registry.register(Qwen3BaseEngine(settings.models_dir, device=device))
         engine_registry.register(CosyVoiceEngine(settings.models_dir, device=device))
         engine_registry.register(FishSpeechEngine(settings.models_dir, device=device))
         engine_registry.register(FishSpeech15Engine(settings.models_dir, device=device))
