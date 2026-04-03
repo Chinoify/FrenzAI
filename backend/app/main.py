@@ -117,12 +117,6 @@ app.add_middleware(
 # Serve generated audio files
 app.mount("/audio", StaticFiles(directory=str(settings.data_dir)), name="audio")
 
-# Cloud mode: serve built frontend from frontend/dist/
-if IS_CLOUD:
-    _frontend_dist = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
-    if _frontend_dist.exists():
-        app.mount("/", StaticFiles(directory=str(_frontend_dist), html=True), name="frontend")
-
 # Routers
 app.include_router(health_router.router)
 app.include_router(tts_router.router)
@@ -141,3 +135,9 @@ app.include_router(s2s_router.router)
 app.include_router(acx_router.router)
 app.include_router(narrator_voices_router.router)
 app.include_router(characters_router.router)
+
+# Cloud mode: serve built frontend AFTER all API routers so /api/* routes work
+if IS_CLOUD:
+    _frontend_dist = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
+    if _frontend_dist.exists():
+        app.mount("/", StaticFiles(directory=str(_frontend_dist), html=True), name="frontend")
