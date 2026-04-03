@@ -161,7 +161,7 @@ export default function CloneVoice() {
       const result = await apiFetch<{
         imported: number
         failed: number
-        staged?: { stage_id: string; filename: string; duration: number | null; size: number; audio_url: string }[]
+        staged?: { stage_id: string; filename: string; duration: number | null; size: number; audio_url: string; gender?: string }[]
         errors?: { name: string; error: string }[]
         message?: string
       }>('/narrator-voices/import-all', { method: 'POST' })
