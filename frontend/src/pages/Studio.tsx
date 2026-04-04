@@ -15,7 +15,7 @@ export default function Studio() {
 
   // Check if a cloned voice is selected (UUID, not a kokoro code)
   const isClonedVoice = selectedVoiceId && voices.some((v) => v.id === selectedVoiceId)
-  const CLONING_ENGINES = ['chatterbox', 'f5tts', 'qwen3tts', 'fishspeech', 'fish-speech']
+  const CLONING_ENGINES = ['chatterbox', 'f5tts', 'fish-speech']
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">

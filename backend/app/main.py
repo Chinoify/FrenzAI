@@ -14,26 +14,16 @@ from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.db.seed import create_tables
 
-# Cloud mode: all engines enabled. Local mode: only Kokoro + Chatterbox + Builtin
+# Cloud mode: all engines. Local mode: Kokoro + Chatterbox + F5-TTS + Fish Speech
 IS_CLOUD = os.environ.get("FRENZAI_CLOUD") == "1"
 
 from app.engines.builtin_engine import BuiltinEngine
 from app.engines.kokoro_engine import KokoroEngine
 from app.engines.chatterbox_engine import ChatterboxEngine
+from app.engines.f5tts_engine import F5TTSEngine
+from app.engines.fish_engine import FishSpeechEngine as FishEngine
 if IS_CLOUD:
     from app.engines.bark_engine import BarkEngine
-    from app.engines.f5tts_engine import F5TTSEngine
-    from app.engines.qwen3tts_engine import Qwen3TTSEngine
-    from app.engines.qwen3_engine import Qwen3TTSEngine as Qwen3BaseEngine
-    from app.engines.cosyvoice_engine import CosyVoiceEngine
-    from app.engines.fishspeech_engine import FishSpeechEngine
-    from app.engines.fish_engine import FishSpeechEngine as FishSpeech15Engine
-    from app.engines.dia_engine import DiaEngine
-    from app.engines.vibevoice_engine import VibeVoiceEngine
-    from app.engines.parler_engine import ParlerEngine
-    # Edge TTS removed — API-based, not needed with local GPU engines
-    from app.engines.luxtts_engine import LuxTTSEngine
-    from app.engines.rvc_engine import RVCEngine
 from app.engines.registry import engine_registry
 from app.routers.health import get_device
 from app.routers import health as health_router
@@ -60,25 +50,15 @@ async def lifespan(app: FastAPI):
     # Startup
     await create_tables()
 
-    # Register engines
+    # Register engines — Kokoro, Chatterbox, F5-TTS, Fish Speech (+ Bark on cloud)
     device = get_device()
     engine_registry.register(BuiltinEngine(settings.models_dir, device="cpu"))
     engine_registry.register(KokoroEngine(settings.models_dir, device=device))
     engine_registry.register(ChatterboxEngine(settings.models_dir, device=device))
+    engine_registry.register(F5TTSEngine(settings.models_dir, device=device))
+    engine_registry.register(FishEngine(settings.models_dir, device=device))
     if IS_CLOUD:
         engine_registry.register(BarkEngine(settings.models_dir, device=device))
-        engine_registry.register(F5TTSEngine(settings.models_dir, device=device))
-        engine_registry.register(Qwen3TTSEngine(settings.models_dir, device=device))
-        engine_registry.register(Qwen3BaseEngine(settings.models_dir, device=device))
-        engine_registry.register(CosyVoiceEngine(settings.models_dir, device=device))
-        engine_registry.register(FishSpeechEngine(settings.models_dir, device=device))
-        engine_registry.register(FishSpeech15Engine(settings.models_dir, device=device))
-        engine_registry.register(DiaEngine(settings.models_dir, device=device))
-        engine_registry.register(VibeVoiceEngine(settings.models_dir, device=device))
-        engine_registry.register(ParlerEngine(settings.models_dir, device=device))
-        # Edge TTS removed
-        engine_registry.register(LuxTTSEngine(settings.models_dir, device=device))
-        engine_registry.register(RVCEngine(settings.models_dir, device=device))
 
     # Pre-load the built-in engine so it's ready immediately
     try:

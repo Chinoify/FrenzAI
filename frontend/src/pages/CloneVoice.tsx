@@ -31,9 +31,7 @@ const STEPS = [
 const ENGINES = [
   { value: 'chatterbox', label: 'Chatterbox (Best for cloning)' },
   { value: 'f5tts', label: 'F5-TTS (Voice cloning)' },
-  { value: 'qwen3tts', label: 'Qwen3-TTS (Multilingual)' },
-  { value: 'fishspeech', label: 'Fish Speech (Multilingual)' },
-  { value: 'kokoro', label: 'Kokoro' },
+  { value: 'fish-speech', label: 'Fish Speech (Multilingual)' },
 ]
 
 const LANGUAGES = [
