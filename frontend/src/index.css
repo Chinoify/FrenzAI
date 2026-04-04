@@ -3,18 +3,18 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #09090b;
-  --bg-secondary: #18181b;
-  --bg-tertiary: #27272a;
-  --border: #27272a;
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
-  --accent: #8b5cf6;
-  --accent-hover: #7c3aed;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --error: #ef4444;
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --border: #e2e8f0;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --success: #16a34a;
+  --warning: #d97706;
+  --error: #dc2626;
 }
 
 * {
@@ -46,11 +46,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #cbd5e1;
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #94a3b8;
 }
 
 /* Smooth transitions */
@@ -69,15 +69,15 @@ button, a, input, select, textarea, [role="button"] {
 
 /* Selection */
 ::selection {
-  background: rgba(139, 92, 246, 0.3);
-  color: #fafafa;
+  background: rgba(124, 58, 237, 0.2);
+  color: #1e293b;
 }
 
 /* Range slider accent */
 input[type="range"] {
   -webkit-appearance: none;
   height: 6px;
-  background: #27272a;
+  background: #e2e8f0;
   border-radius: 10px;
   cursor: pointer;
 }
@@ -86,11 +86,72 @@ input[type="range"]::-webkit-slider-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #8b5cf6;
+  background: #7c3aed;
   cursor: pointer;
-  border: 2px solid #09090b;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 input[type="range"]::-webkit-slider-thumb:hover {
-  background: #7c3aed;
+  background: #6d28d9;
   transform: scale(1.1);
+}
+
+/* Light theme overrides for Tailwind dark classes used throughout */
+.bg-zinc-900 { background-color: #ffffff !important; }
+.bg-zinc-950 { background-color: #f8fafc !important; }
+.bg-zinc-800 { background-color: #f1f5f9 !important; }
+.bg-zinc-900\/50 { background-color: rgba(255,255,255,0.8) !important; }
+.bg-zinc-800\/50 { background-color: rgba(241,245,249,0.5) !important; }
+.border-zinc-800 { border-color: #e2e8f0 !important; }
+.border-zinc-700 { border-color: #cbd5e1 !important; }
+.border-zinc-800\/50 { border-color: rgba(226,232,240,0.5) !important; }
+.text-zinc-300 { color: #334155 !important; }
+.text-zinc-400 { color: #64748b !important; }
+.text-zinc-500 { color: #64748b !important; }
+.text-zinc-600 { color: #94a3b8 !important; }
+.text-zinc-200 { color: #1e293b !important; }
+.text-zinc-100 { color: #1e293b !important; }
+.placeholder-zinc-600::placeholder { color: #94a3b8 !important; }
+.hover\:bg-zinc-700:hover { background-color: #e2e8f0 !important; }
+.hover\:bg-zinc-600:hover { background-color: #cbd5e1 !important; }
+.hover\:bg-zinc-800:hover { background-color: #f1f5f9 !important; }
+.hover\:text-zinc-300:hover { color: #334155 !important; }
+.hover\:text-zinc-200:hover { color: #1e293b !important; }
+.hover\:border-zinc-600:hover { border-color: #94a3b8 !important; }
+
+/* Keep accent colors vivid */
+.bg-violet-500 { background-color: #7c3aed !important; }
+.bg-violet-500\/15 { background-color: rgba(124,58,237,0.1) !important; }
+.hover\:bg-violet-600:hover { background-color: #6d28d9 !important; }
+.text-violet-400 { color: #7c3aed !important; }
+.text-violet-500 { color: #7c3aed !important; }
+.border-violet-500 { border-color: #7c3aed !important; }
+
+/* Gradient buttons stay vibrant */
+.from-violet-600 { --tw-gradient-from: #7c3aed !important; }
+.to-purple-600 { --tw-gradient-to: #9333ea !important; }
+
+/* Cards and panels */
+.divide-zinc-800 > * + * { border-color: #e2e8f0 !important; }
+
+/* Select dropdowns */
+select {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+}
+select option {
+  background-color: #ffffff;
+  color: #334155;
+}
+
+/* Input fields */
+input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+textarea {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+}
+input::placeholder, textarea::placeholder {
+  color: #94a3b8 !important;
 }
