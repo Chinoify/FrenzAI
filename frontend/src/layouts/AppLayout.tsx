@@ -14,7 +14,7 @@ export default function AppLayout() {
   }, [fetchHealth, fetchModels])
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-zinc-950">
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
         <div className="px-8 py-6 max-w-[1400px] mx-auto">
