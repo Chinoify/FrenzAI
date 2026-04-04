@@ -25,7 +25,7 @@ class Qwen3TTSEngine(TTSEngine):
         try:
             import qwen_tts  # noqa: F401
             return True
-        except ImportError:
+        except Exception:
             return False
 
     async def download(self, progress_callback=None):
