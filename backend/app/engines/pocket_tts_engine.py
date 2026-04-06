@@ -91,16 +91,19 @@ class PocketTTSEngine(TTSEngine):
             if not ref_audio:
                 raise ValueError("Pocket TTS requires a reference audio sample")
 
-            voice_state = self._model.get_state_for_audio_prompt(ref_audio)
-            audio = self._model.generate_audio(voice_state, text)
+            # Cache voice state per reference path for speed
+            if not hasattr(self, "_voice_states"):
+                self._voice_states = {}
+            if ref_audio not in self._voice_states:
+                self._voice_states[ref_audio] = self._model.get_state_for_audio_prompt(ref_audio)
+            voice_state = self._voice_states[ref_audio]
 
-            if hasattr(audio, "numpy"):
-                audio = audio.numpy()
-            audio = np.asarray(audio, dtype=np.float32)
+            audio_tensor = self._model.generate_audio(voice_state, text)
+            audio = audio_tensor.numpy().astype(np.float32) if hasattr(audio_tensor, "numpy") else np.asarray(audio_tensor, dtype=np.float32)
             if len(audio.shape) > 1:
                 audio = audio.squeeze()
 
-            sr = getattr(self._model, "sample_rate", 24000)
+            sr = self._model.sample_rate
 
             # Normalize to -3dB
             peak = np.abs(audio).max()
