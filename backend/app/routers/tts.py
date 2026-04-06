@@ -136,6 +136,14 @@ async def generate_speech(
             kokoro_voice=kokoro_voice,
         )
     except Exception as e:
+        # Reset CUDA on error to prevent cascading failures
+        try:
+            import torch
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+                torch.cuda.synchronize()
+        except Exception:
+            pass
         raise HTTPException(status_code=500, detail=f"Generation failed ({engine_name}): {e}")
 
     # Post-process

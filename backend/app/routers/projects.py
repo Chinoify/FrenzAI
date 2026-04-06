@@ -515,63 +515,86 @@ async def generate_all_chapters(
             if not project_kokoro_voice and voice.engine:
                 engine_name = voice.engine
 
+    # Run generation as background task so it continues even if user leaves page
+    import asyncio
+
+    async def _generate_bg():
+        from app.db.database import async_session
+        async with async_session() as bg_session:
+            bg_project = await bg_session.get(Project, project_id)
+            bg_chapters = await _get_chapters(bg_session, project_id)
+            if req.chapter_ids:
+                bg_chapters = [ch for ch in bg_chapters if ch.id in req.chapter_ids]
+
+            bg_project.status = "generating"
+            await bg_session.commit()
+
+            for i, chapter in enumerate(bg_chapters):
+                ch_voice_embedding = voice_embedding
+                ch_sample_path = sample_path
+                ch_kokoro_voice = project_kokoro_voice
+                ch_engine = engine_name
+
+                if chapter.voice_id:
+                    ch_voice = await bg_session.get(Voice, chapter.voice_id)
+                    if ch_voice:
+                        ch_voice_embedding = await get_voice_embedding(ch_voice)
+                        ch_sample_path = ch_voice.sample_path
+                        if ch_voice.engine:
+                            ch_engine = ch_voice.engine
+                            ch_kokoro_voice = None
+
+                ch_raw_model = chapter.model or raw_model
+                if not chapter.voice_id:
+                    ch_engine = ch_raw_model
+                if ch_raw_model.startswith("kokoro:"):
+                    ch_engine = "kokoro"
+                    ch_kokoro_voice = ch_raw_model.split(":", 1)[1]
+
+                try:
+                    audio_path, duration = await generate_chapter_audio(
+                        text=chapter.text,
+                        engine_name=ch_engine,
+                        voice_embedding=ch_voice_embedding,
+                        sample_path=ch_sample_path,
+                        language=req.language,
+                        speed=req.speed,
+                        kokoro_voice=ch_kokoro_voice,
+                    )
+                    chapter.audio_path = audio_path
+                    chapter.duration = duration
+                    chapter.status = "completed"
+                except Exception as e:
+                    chapter.status = "error"
+                    print(f"[Audiobook] Chapter {i+1} error: {e}", flush=True)
+                await bg_session.commit()
+                print(f"[Audiobook] Chapter {i+1}/{len(bg_chapters)}: {chapter.title} - {chapter.status}", flush=True)
+
+            bg_project.status = "completed"
+            bg_project.total_duration = round(sum(ch.duration or 0 for ch in bg_chapters), 2)
+            await bg_session.commit()
+            print(f"[Audiobook] Done! Total: {bg_project.total_duration}s", flush=True)
+
+    asyncio.create_task(_generate_bg())
+
     async def progress_stream():
+        # Send initial response then poll status
         total = len(chapters)
-        project.status = "generating"
-        await session.commit()
+        yield f"data: {json.dumps({'chapter': 0, 'total': total, 'status': 'started'})}\n\n"
 
-        for i, chapter in enumerate(chapters):
-            yield f"data: {json.dumps({'chapter': i + 1, 'total': total, 'title': chapter.title, 'status': 'generating'})}\n\n"
+        for _ in range(total * 60):  # poll for up to 60s per chapter
+            await asyncio.sleep(2)
+            await session.refresh(project)
+            completed = 0
+            for ch in await _get_chapters(session, project_id):
+                if ch.status in ("completed", "error"):
+                    completed += 1
+            yield f"data: {json.dumps({'chapter': completed, 'total': total, 'status': 'generating'})}\n\n"
+            if completed >= total:
+                break
 
-            ch_voice_embedding = voice_embedding
-            ch_sample_path = sample_path
-            ch_kokoro_voice = project_kokoro_voice
-
-            # Per-chapter voice override
-            if chapter.voice_id:
-                ch_voice = await session.get(Voice, chapter.voice_id)
-                if ch_voice:
-                    ch_voice_embedding = await get_voice_embedding(ch_voice)
-                    ch_sample_path = ch_voice.sample_path
-                    # Use the voice's engine for cloned voices
-                    if ch_voice.engine:
-                        ch_engine = ch_voice.engine
-                        ch_kokoro_voice = None
-
-            ch_raw_model = chapter.model or raw_model
-            if not chapter.voice_id:
-                ch_engine = ch_raw_model
-            if ch_raw_model.startswith("kokoro:"):
-                ch_engine = "kokoro"
-                ch_kokoro_voice = ch_raw_model.split(":", 1)[1]
-
-            try:
-                audio_path, duration = await generate_chapter_audio(
-                    text=chapter.text,
-                    engine_name=ch_engine,
-                    voice_embedding=ch_voice_embedding,
-                    sample_path=ch_sample_path,
-                    language=req.language,
-                    speed=req.speed,
-                    kokoro_voice=ch_kokoro_voice,
-                )
-                chapter.audio_path = audio_path
-                chapter.duration = duration
-                chapter.status = "completed"
-                await session.commit()
-
-                yield f"data: {json.dumps({'chapter': i + 1, 'total': total, 'title': chapter.title, 'status': 'completed', 'duration': duration})}\n\n"
-            except Exception as e:
-                chapter.status = "error"
-                await session.commit()
-                yield f"data: {json.dumps({'chapter': i + 1, 'total': total, 'title': chapter.title, 'status': 'error', 'error': str(e)})}\n\n"
-
-        project.status = "completed"
-        total_duration = sum(ch.duration or 0 for ch in chapters)
-        project.total_duration = round(total_duration, 2)
-        await session.commit()
-
-        yield f"data: {json.dumps({'status': 'completed', 'total_duration': project.total_duration})}\n\n"
+        await session.refresh(project)
+        yield f"data: {json.dumps({'status': 'completed', 'total_duration': project.total_duration or 0})}\n\n"
 
     return StreamingResponse(progress_stream(), media_type="text/event-stream")
 

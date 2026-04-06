@@ -22,6 +22,12 @@ from app.engines.kokoro_engine import KokoroEngine
 from app.engines.chatterbox_engine import ChatterboxEngine
 from app.engines.f5tts_engine import F5TTSEngine
 from app.engines.fish_engine import FishSpeechEngine as FishEngine
+# CPU-friendly engines (no GPU needed)
+from app.engines.pocket_tts_engine import PocketTTSEngine
+from app.engines.neutts_engine import NeuTTSAirEngine
+from app.engines.outetts_engine import OuteTTSEngine
+from app.engines.xtts_engine import XTTSv2Engine
+from app.engines.gpt_sovits_engine import GPTSoVITSEngine
 if IS_CLOUD:
     from app.engines.bark_engine import BarkEngine
 from app.engines.registry import engine_registry
@@ -50,9 +56,16 @@ async def lifespan(app: FastAPI):
     # Startup
     await create_tables()
 
-    # Register engines — Kokoro, Chatterbox, F5-TTS, Fish Speech (+ Bark on cloud)
+    # Register engines
     device = get_device()
     engine_registry.register(BuiltinEngine(settings.models_dir, device="cpu"))
+    # CPU-friendly engines (run on any PC, no GPU needed)
+    engine_registry.register(PocketTTSEngine(settings.models_dir))
+    engine_registry.register(NeuTTSAirEngine(settings.models_dir))
+    engine_registry.register(OuteTTSEngine(settings.models_dir))
+    engine_registry.register(XTTSv2Engine(settings.models_dir, device=device))
+    engine_registry.register(GPTSoVITSEngine(settings.models_dir, device=device))
+    # GPU-accelerated engines (work on CPU but slower)
     engine_registry.register(KokoroEngine(settings.models_dir, device=device))
     engine_registry.register(ChatterboxEngine(settings.models_dir, device=device))
     engine_registry.register(F5TTSEngine(settings.models_dir, device=device))
